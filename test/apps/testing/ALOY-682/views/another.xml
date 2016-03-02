@@ -1,0 +1,10 @@
+<Alloy>
+	<Window>
+		<View>
+			<View>
+				<!-- id="another" will cause the compile warning message -->
+				<View id="another"/>
+			</View>
+		</View>
+	</Window>
+</Alloy>

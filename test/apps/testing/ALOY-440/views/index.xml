@@ -1,0 +1,15 @@
+<Alloy>
+	<Collection src="fruits"/>
+	<Collection src="colors"/>
+	<Window>
+		<Picker id="picker" top="50" useSpinner="true">
+			<PickerColumn id="column1" dataCollection="fruits">
+				<PickerRow title="{name}"/>
+			</PickerColumn>
+			<!-- Picker shorthand notation, title attribute, and transforms supported -->
+			<Column id="column2" dataCollection="colors" dataTransform="doTransform">
+				<Row title="{color}"/>
+			</Column>
+		</Picker>
+	</Window>
+</Alloy>
