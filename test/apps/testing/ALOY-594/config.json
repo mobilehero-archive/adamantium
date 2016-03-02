@@ -1,0 +1,5 @@
+{
+	"useAlloyModel": true,
+	"sourcemap": false,
+	"adapters": ["sql"]
+}

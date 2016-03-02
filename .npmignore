@@ -1,0 +1,9 @@
+.DS_Store
+node_modules
+*.sublime-project
+*.sublime-workspace
+test/projects/Harness
+test/projects/TiAppCopy
+TODO
+test/apps/testing
+npm-debug.log
