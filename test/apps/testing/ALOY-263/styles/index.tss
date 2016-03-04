@@ -1,0 +1,11 @@
+'#index': {
+	backgroundColor: '#fff',
+	fullscreen: false,
+	exitOnClose: true
+}
+"#picker": {
+	value: "2014-12-17T03:24:00"
+}
+"#txt": {
+	value: "July 0, 2013"
+}

@@ -1,0 +1,17 @@
+<Alloy>
+	<Collection src="rows"/>
+	<Window backgroundColor="white" layout="vertical">
+		<SearchBar id="searchList" showCancel="true" top="20" platform="ios"/>
+		<ListView id="listView" top="0" defaultItemTemplate="template" searchView="searchList">
+			<SearchBar id="searchList" showCancel="true" top="20" platform="android"/>
+			<Templates>
+				<ItemTemplate name="template">
+					<Label bindId="title" id="title" left="5" />
+				</ItemTemplate>
+			</Templates>
+			<ListSection id="main" dataCollection="rows">
+				<ListItem template="template" title:text="{title}" searchableText="{title}"/>
+			</ListSection>
+		</ListView>
+	</Window>
+</Alloy>
