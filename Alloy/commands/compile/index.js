@@ -501,6 +501,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 	CU.destroyCode = '';
 	CU.postCode = '';
 	CU[CONST.AUTOSTYLE_PROPERTY] = compileConfig[CONST.AUTOSTYLE_PROPERTY];
+	CU[CONST.BABEL_PROPERTY] = compileConfig[CONST.BABEL_PROPERTY];
 	CU.currentManifest = manifest;
 	CU.currentDefaultId = viewName;
 
@@ -1044,15 +1045,23 @@ function optimizeCompiledCode(alloyConfig, paths) {
 			}) && !fs.statSync(path.join(compileConfig.dir.resources, f)).isDirectory();
 		});
 	}
-
 	while((files = _.difference(getJsFiles(),lastFiles)).length > 0) {
 		_.each(files, function(file) {
 			// generate AST from file
 			var fullpath = path.join(compileConfig.dir.resources,file);
 			var ast;
 			logger.info('- ' + file);
+			var source = fs.readFileSync(fullpath, 'utf8');
+			if (CU[CONST.BABEL_PROPERTY]) {
+				try {
+					logger.trace('  transforming "' + fullpath);
+					source = require('babel-core').transform(source, CU[CONST.BABEL_PROPERTY].options).code;
+				} catch (e) {
+					U.die('Error transforming file "' + fullpath + '"', e);
+				}
+			} 
 			try {
-				ast = uglifyjs.parse(fs.readFileSync(fullpath,'utf8'), {
+				ast = uglifyjs.parse(source, {
 					filename: file
 				});
 			} catch (e) {
