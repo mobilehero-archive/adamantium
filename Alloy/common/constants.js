@@ -51,6 +51,7 @@ exports.SUPPORTED_BACKBONE_VERSIONS = ['0.9.2', '1.1.2'];
 exports.CLASS_PROPERTY = 'classes';
 exports.APINAME_PROPERTY = 'apiName';
 exports.AUTOSTYLE_PROPERTY = 'autoStyle';
+exports.BABEL_PROPERTY = 'babeljs';
 exports.DOCROOT_MODULE_PROPERTY = "module";
 exports.DOCROOT_BASECONTROLLER_PROPERTY = "baseController";
 
