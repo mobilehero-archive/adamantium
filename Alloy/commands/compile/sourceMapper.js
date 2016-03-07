@@ -10,6 +10,7 @@ var SM = require('source-map'),
 	CONST = require('../../common/constants'),
 	uglifyjs = require('uglify-js'),
 	logger = require('../../logger'),
+	CU = require('./compilerUtils'),
 	_ = require('../../lib/alloy/underscore')._;
 
 var lineSplitter = /(?:\r\n|\r|\n)/,
@@ -94,6 +95,15 @@ exports.generateCodeAndSourceMap = function(generator, compileConfig) {
 		}
 	});
 
+	if (CU[CONST.BABEL_PROPERTY]) {
+		try {
+			logger.trace('  transforming "' + genMap.file);
+			genMap.code = require('babel-core').transform(genMap.code, CU[CONST.BABEL_PROPERTY].options).code;
+		} catch (e) {
+			U.die('Error transforming file "' + genMap.file + '"', e);
+		}
+	} 
+
 	// parse composite code into an AST
 	var ast;
 	try {
@@ -177,6 +187,15 @@ exports.generateSourceMap = function(generator, compileConfig) {
 			mapLine(mapper, target, genMap, line);
 		}
 	});
+
+	if (CU[CONST.BABEL_PROPERTY]) {
+		try {
+			logger.trace('  transforming "' + genMap.file);
+			genMap.code = require('babel-core').transform(genMap.code, CU[CONST.BABEL_PROPERTY].options).code;
+		} catch (e) {
+			U.die('Error transforming file "' + genMap.file + '"', e);
+		}
+	} 
 
 	// parse composite code into an AST
 	var ast;
