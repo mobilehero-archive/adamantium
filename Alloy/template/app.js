@@ -8,7 +8,7 @@ var Alloy = require('alloy'),
 	Backbone = Alloy.Backbone;
 	
 	process = require('process');
-	require('/alloy/_init');
+	Alloy.CFG.nodejs_require && Alloy.CFG.nodejs_require.enabled && require('/alloy/_init');
 
 __MAPMARKER_ALLOY_JS__
 Alloy.createController('index');
