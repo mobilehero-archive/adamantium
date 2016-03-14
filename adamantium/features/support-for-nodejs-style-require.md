@@ -7,6 +7,29 @@ What this means is that you can now add npm packages to your app and (for some p
 use it without making any changes.  It also allows developers to be consistent when using
 `require()` while going back and forth between Titanium/Alloy and Node.js.
 
+### Enabling Feature
+
+This feature is enabled by using the new `nodejs_require` property in `config.json`
+
+```js
+{
+    "global": {},
+    "env:development": {},
+    "env:test": {},
+    "env:production": {},
+    "os:android": {},
+    "os:blackberry": {},
+    "os:ios": {},
+    "os:mobileweb": {},
+    "os:windows": {},
+    "dependencies": {},
+    "nodejs_require": {
+        "enabled": true
+    }
+}
+
+```
+
 ### Examples
 
 ```javascript
@@ -112,6 +135,8 @@ require("alloy/controllers/test"); // resolves to "/alloy/controllers/test.js"
 
 
 ```
+
+### Module Resolution 
 
 Adamantium uses the current nodejs method for resolving a module name
 
