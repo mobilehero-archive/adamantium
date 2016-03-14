@@ -8,7 +8,11 @@ var Alloy = require('alloy'),
 	Backbone = Alloy.Backbone;
 	
 	process = require('process');
-	Alloy.CFG.nodejs_require && Alloy.CFG.nodejs_require.enabled && require('/alloy/_init');
+    if( Alloy.CFG.nodejs_require && Alloy.CFG.nodejs_require.enabled ){
+        require('/alloy/_init');
+        process = require('process');
+    }
+	// Alloy.CFG.nodejs_require && Alloy.CFG.nodejs_require.enabled && require('/alloy/_init');
 
 __MAPMARKER_ALLOY_JS__
 Alloy.createController('index');
