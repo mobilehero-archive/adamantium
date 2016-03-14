@@ -54,6 +54,7 @@ exports.AUTOSTYLE_PROPERTY = 'autoStyle';
 exports.BABEL_PROPERTY = 'babeljs';
 exports.DOCROOT_MODULE_PROPERTY = "module";
 exports.DOCROOT_BASECONTROLLER_PROPERTY = "baseController";
+exports.NODEJS_MODULE_RESOLUTION = "nodejs_require";
 
 // Constants related to model-view binding
 exports.BIND_PROPERTIES = ['dataCollection','dataFilter','dataTransform','dataFunction'];
