@@ -7,6 +7,8 @@ What this means is that you can now add npm packages to your app and (for some p
 use it without making any changes.  It also allows developers to be consistent when using
 `require()` while going back and forth between Titanium/Alloy and Node.js.
 
+> This is a beta branch of Adamantium.  Use `npm install -g mobilehero/admantium#next/1.7.35` to install and use.  See the main `README.md` file for examples for installing with Appcelerator Platform.
+
 ### Enabling Feature
 
 This feature is enabled by using the new `nodejs_require` property in `config.json`
