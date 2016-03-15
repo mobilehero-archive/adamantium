@@ -1,4 +1,4 @@
-var _ = require("../../../lib/alloy/underscore")._,
+var _ = require("lodash"),
 	GU = require('../generateUtils'),
 	logger = require('../../../logger');
 

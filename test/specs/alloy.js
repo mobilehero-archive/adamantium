@@ -3,7 +3,7 @@ var fs = require('fs'),
 	TU = require('../lib/testUtils'),
 	U = require('../../Alloy/utils'),
 	CONST = require('../../Alloy/common/constants'),
-	_ = require('../../Alloy/lib/alloy/underscore')._;
+	_ = require("lodash");
 
 var TIMEOUT_DEFAULT = 1000;
 

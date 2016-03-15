@@ -1,6 +1,6 @@
 var fs = require('fs'),
 	path = require('path'),
-	_ = require('../../lib/alloy/underscore')._,
+	_ = require("lodash"),
 	U = require('../../utils'),
 	CU = require('./compilerUtils'),
 	optimizer = require('./optimizer'),
@@ -144,7 +144,7 @@ exports.loadGlobalStyles = function(appPath, opts) {
 	}
 
 	// create hash of existing global styles
-	var hash = U.createHash(_.pluck(loadArray, 'path'));
+	var hash = U.createHash(_.map(loadArray, 'path'));
 
 	// see if we can use the cached global style
 	if (buildlog.data.globalStyleCacheHash === hash && fs.existsSync(cacheFile)) {
@@ -385,13 +385,13 @@ exports.processStyle = function(_style, _state) {
 						} else {
 							// keyboard type shortcuts for TextField, TextArea
 							// support shortcuts for keyboard type, return key type, and autocapitalization
-							if (sn===KEYBOARD_PROPERTIES[0] && _.contains(KEYBOARD_TYPES, value.toUpperCase())) {
+							if (sn===KEYBOARD_PROPERTIES[0] && _.includes(KEYBOARD_TYPES, value.toUpperCase())) {
 								code += prefix + 'Ti.UI.KEYBOARD_' + value.toUpperCase() + ',';
 							}
-							if (sn===KEYBOARD_PROPERTIES[1] && _.contains(RETURN_KEY_TYPES, value.toUpperCase())) {
+							if (sn===KEYBOARD_PROPERTIES[1] && _.includes(RETURN_KEY_TYPES, value.toUpperCase())) {
 								code += prefix + 'Ti.UI.RETURNKEY_' + value.toUpperCase() + ',';
 							}
-							if (sn===KEYBOARD_PROPERTIES[2] && _.contains(AUTOCAPITALIZATION_TYPES, value.toUpperCase())) {
+							if (sn===KEYBOARD_PROPERTIES[2] && _.includes(AUTOCAPITALIZATION_TYPES, value.toUpperCase())) {
 								code += prefix + 'Ti.UI.TEXT_AUTOCAPITALIZATION_' + value.toUpperCase() + ',';
 							}
 						}
@@ -436,7 +436,7 @@ exports.generateStyleParams = function(styles,classes,id,apiName,extraStyle,theS
 	// process all style items, in order
 	_.each(styles, function(style) {
 		if ((style.isId && style.key === id) ||
-			(style.isClass && _.contains(classes, style.key)) ||
+			(style.isClass && _.includes(classes, style.key)) ||
 			(style.isApi && elementName === style.key)) {
 
 			// manage potential runtime conditions for the style
@@ -525,7 +525,7 @@ exports.generateStyleParams = function(styles,classes,id,apiName,extraStyle,theS
 
 						if (CU.models.length !== 0) {
 							if (partsLen > 3 ||
-								(parts[0] !== '$' && !_.contains(CU.models, parts[0]))) {
+								(parts[0] !== '$' && !_.includes(CU.models, parts[0]))) {
 								U.die([
 									'Attempt to reference the deep object reference : "' + match[1] + '".',
 									'Instead, please map the object property to an attribute of the model.'

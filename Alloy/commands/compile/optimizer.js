@@ -5,7 +5,7 @@
 var uglifyjs = require('uglify-js'),
 	path = require('path'),
 	fs = require('fs'),
-	_ = require('../../lib/alloy/underscore')._;
+	_ = require("lodash");
 
 var JSON_NULL = JSON.parse('null');
 

@@ -1,6 +1,7 @@
 var optimizer = require('../optimizer'),
 	CONST = require('../../../common/constants'),
-	_ = require('../../../lib/alloy/underscore')._;
+	_ = require("lodash");
+
 
 exports.process = function(ast, config) {
 	config = config ? config.alloyConfig : {};

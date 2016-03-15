@@ -5,7 +5,7 @@ $.styleModule.html = _.template(Alloy.Globals.htmlTemplate, {
 	BRUSH: 'js'
 });
 
-$.styleArray.html = _.template(Alloy.Globals.htmlTemplate, {
+$.styleArray.html = _.template(Alloy.Globals.htmlTemplate)({
 	CODE: JSON.stringify(require('alloy/styles/features/rawStyle'), null, '  '),
 	BRUSH: 'js'
 });

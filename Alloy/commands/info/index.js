@@ -3,7 +3,7 @@
 	sample applications, and application templates.
 */
 var path = require('path'),
-	_ = require('../../lib/alloy/underscore')._,
+	_ = require("lodash"),
 	U = require('../../utils'),
 	CONST = require('../../common/constants'),
 	alloyRoot = path.join(__dirname,'..','..','..');

@@ -11,7 +11,7 @@ var SM = require('source-map'),
 	uglifyjs = require('uglify-js'),
 	logger = require('../../logger'),
 	CU = require('./compilerUtils'),
-	_ = require('../../lib/alloy/underscore')._;
+	_ = require("lodash");
 
 var lineSplitter = /(?:\r\n|\r|\n)/,
 	mods = [
@@ -76,6 +76,8 @@ exports.generateCodeAndSourceMap = function(generator, compileConfig) {
 
 	// initialize the rest of the generator properties
 	target.count = 1;
+	var test = getTextFromGenerator(target.templateContent,target.template);
+	console.error(typeof test);
 	target.lines = getTextFromGenerator(target.templateContent,target.template).split(lineSplitter);
 	_.each(markers, function(m) {
 		var marker = data[m];
@@ -86,7 +88,7 @@ exports.generateCodeAndSourceMap = function(generator, compileConfig) {
 	// generate the source map and composite code
 	_.each(target.lines, function(line) {
 		var trimmed = U.trim(line);
-		if (_.contains(markers, trimmed)) {
+		if (_.includes(markers, trimmed)) {
 			_.each(data[trimmed].lines, function(line) {
 				mapLine(mapper, data[trimmed], genMap, line);
 			});
@@ -179,7 +181,7 @@ exports.generateSourceMap = function(generator, compileConfig) {
 	// generate the source map and composite code
 	_.each(target.lines, function(line) {
 		var trimmed = U.trim(line);
-		if (_.contains(markers, trimmed)) {
+		if (_.includes(markers, trimmed)) {
 			_.each(data[trimmed].lines, function(line) {
 				mapLine(mapper, data[trimmed], genMap, line);
 			});

@@ -38,7 +38,7 @@ exports.generate = function(name, type, program, args) {
 
 	// add the platform-specific folder to the path, if necessary
 	if (program.platform) {
-		if (_.contains(['VIEW','CONTROLLER','STYLE'],type)) {
+		if (_.includes(['VIEW','CONTROLLER','STYLE'],type)) {
 			dir = path.join(dir,program.platform);
 		} else {
 			logger.warn('platform "' + program.platform +
@@ -78,7 +78,7 @@ exports.generate = function(name, type, program, args) {
 		if (args.templateFunc) {
 			templateContents = args.templateFunc(templateContents);
 		}
-		var code = _.template(templateContents, args.template || {});
+		var code = _.template(templateContents)(args.template || {});
 		fs.writeFileSync(file, code);
 
 		return {

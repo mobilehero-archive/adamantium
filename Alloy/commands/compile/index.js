@@ -6,7 +6,7 @@ var ejs = require('ejs'),
     uglifyjs = require('uglify-js'),
 
     // alloy requires
-    _ = require('../../lib/alloy/underscore'),
+    _ = require("lodash"),
     logger = require('../../logger'),
     U = require('../../utils'),
     tiapp = require('../../tiapp'),
@@ -166,7 +166,7 @@ module.exports = function(args, program) {
     U.copyFileSync(
         path.join(
             alloyRoot, "lib", "alloy", "backbone",
-            (_.contains(CONST.SUPPORTED_BACKBONE_VERSIONS, compileConfig.backbone))
+            (_.includes(CONST.SUPPORTED_BACKBONE_VERSIONS, compileConfig.backbone))
                 ? compileConfig.backbone
                 : CONST.DEFAULT_BACKBONE_VERSION,
             "backbone.js"
@@ -485,7 +485,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
                 " = new (require('alloy/widget'))('" + manifest.id + "');this.__widgetId='" +
                 manifest.id + "';",
             WPATH: !manifest ? '' : _.template(
-                fs.readFileSync(path.join(alloyRoot, 'template', 'wpath.js'), 'utf8'),
+                fs.readFileSync(path.join(alloyRoot, 'template', 'wpath.js'), 'utf8'))(
                 { WIDGETID: manifest.id }
             ),
             __MAPMARKER_CONTROLLER_CODE__: ''
@@ -656,13 +656,13 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
                 if (args.fullname === 'Alloy.Require') {
                     var inspect = CU.inspectRequireNode(node);
                     for (var j = 0; j < inspect.names.length; j++) {
-                        if (!_.contains(valid, inspect.names[j])) {
+                        if (!_.includes(valid, inspect.names[j])) {
                             found = false;
                             break;
                         }
                     }
                 } else {
-                    found = _.contains(valid, args.fullname);
+                    found = _.includes(valid, args.fullname);
                 }
 
                 if (!found) {
@@ -677,7 +677,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
         // process any model/collection nodes
         _.each(rootChildren, function(node, i) {
             var fullname = CU.getNodeFullname(node);
-            var isModelElement = _.contains(CONST.MODEL_ELEMENTS, fullname);
+            var isModelElement = _.includes(CONST.MODEL_ELEMENTS, fullname);
 
             if (isModelElement) {
                 var vCode = CU.generateNode(node, state, undefined, false, true);
@@ -738,7 +738,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 
             // for each binding belonging to this model/conditional pair...
             _.each(bindings, function(binding) {
-                bCode += _.template(bTemplate, {
+                bCode += _.template(bTemplate)({
                     id: binding.id,
                     prop: binding.prop,
                     model: modelVar,
@@ -781,7 +781,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
     var controllerCode = template.__MAPMARKER_CONTROLLER_CODE__;
     delete template.__MAPMARKER_CONTROLLER_CODE__;
     var code = _.template(fs.readFileSync(
-        path.join(compileConfig.dir.template, 'component.js'), 'utf8'), template);
+        path.join(compileConfig.dir.template, 'component.js'), 'utf8'))(template);
 
     // prep the controller paths based on whether it's an app
     // controller or widget controller
@@ -859,7 +859,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 
         // make sure this style entry applies to the current platform
         if (s && s.queries && s.queries.platform &&
-            !_.contains(s.queries.platform, buildPlatform)) {
+            !_.includes(s.queries.platform, buildPlatform)) {
             return;
         }
 
@@ -903,7 +903,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
     var styleCode = 'module.exports = [' + processedStyles.join(',') + '];';
     if (manifest) {
         styleCode += _.template(
-            fs.readFileSync(path.join(alloyRoot, 'template', 'wpath.js'), 'utf8'),
+            fs.readFileSync(path.join(alloyRoot, 'template', 'wpath.js'), 'utf8'))(
             { WIDGETID: manifest.id }
         );
     }
@@ -972,7 +972,7 @@ function processModels(dirs) {
             var basename = path.basename(fullpath, '.' + CONST.FILE_EXT.MODEL);
 
             // generate model code based on model.js template and migrations
-            var code = _.template(fs.readFileSync(modelTemplateFile, 'utf8'), {
+            var code = _.template(fs.readFileSync(modelTemplateFile, 'utf8'))({
                 basename: basename,
                 modelJs: fs.readFileSync(fullpath, 'utf8'),
                 migrations: findModelMigrations(basename, migrationDir)

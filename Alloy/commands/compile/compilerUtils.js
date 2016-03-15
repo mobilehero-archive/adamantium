@@ -7,7 +7,7 @@ var U = require('../../utils'),
 	jsonlint = require('jsonlint'),
 	logger = require('../../logger'),
 	astController = require('./ast/controller'),
-	_ = require('../../lib/alloy/underscore')._,
+	_ = require("lodash"),
 	styler = require('./styler'),
 	XMLSerializer = require("xmldom").XMLSerializer,
 	CONST = require('../../common/constants');
@@ -78,7 +78,7 @@ exports.getCompilerConfig = function() {
 };
 
 exports.generateVarName = function(id, name) {
-	if (_.contains(CONST.JS_RESERVED_ALL,id)) {
+	if (_.includes(CONST.JS_RESERVED_ALL,id)) {
 		U.die([
 			'Invalid ID "' + id + '" for <' + name + '>.',
 			'Can\'t use reserved Javascript words as IDs.',
@@ -148,7 +148,7 @@ exports.getParserArgs = function(node, state, opts) {
 
 	// cleanup namespaces and nodes
 	ns = ns.replace(/^Titanium\./, 'Ti.');
-	if (doSetId && !_.contains(CONST.MODEL_ELEMENTS, fullname)) {
+	if (doSetId && !_.includes(CONST.MODEL_ELEMENTS, fullname)) {
 		node.setAttribute('id', id);
 	}
 
@@ -160,7 +160,7 @@ exports.getParserArgs = function(node, state, opts) {
 			if (matches !== null) {
 				var negate = matches[1];
 				var name = matches[2];
-				if (_.contains(CONST.PLATFORMS, name)) {
+				if (_.includes(CONST.PLATFORMS, name)) {
 					if (negate === '!') {
 						_.each(_.without(CONST.PLATFORMS, name), function(n) {
 							platformObj[n] = true;
@@ -178,7 +178,7 @@ exports.getParserArgs = function(node, state, opts) {
 	// get create arguments and events from attributes
 	var createArgs = {},
 		events = [];
-	var attrs = _.contains(['Alloy.Require'], fullname) ?
+	var attrs = _.includes(['Alloy.Require'], fullname) ?
 		RESERVED_ATTRIBUTES_REQ_INC :
 		RESERVED_ATTRIBUTES;
 
@@ -202,9 +202,9 @@ exports.getParserArgs = function(node, state, opts) {
 
 	_.each(node.attributes, function(attr) {
 		var attrName = attr.nodeName;
-		if (_.contains(attrs, attrName)) { return; }
+		if (_.includes(attrs, attrName)) { return; }
 		var matches = attrName.match(RESERVED_EVENT_REGEX);
-		if (matches !== null && exports.isNodeForCurrentPlatform(node) && !_.contains(CONST.SPECIAL_PROPERTY_NAMES, attrName)) {
+		if (matches !== null && exports.isNodeForCurrentPlatform(node) && !_.includes(CONST.SPECIAL_PROPERTY_NAMES, attrName)) {
 			events.push({
 				name: U.lcfirst(matches[1]),
 				value: node.getAttribute(attrName)
@@ -321,7 +321,7 @@ exports.generateNode = function(node, state, defaultId, isTopLevel, isModelOrCol
 	// Determine which parser to use for this node
 	var parsersDir = path.join(alloyRoot,'commands','compile','parsers');
 	var parserRequire = 'default';
-	if (_.contains(fs.readdirSync(parsersDir), args.fullname+'.js')) {
+	if (_.includes(fs.readdirSync(parsersDir), args.fullname+'.js')) {
 		parserRequire = args.fullname+'.js';
 	}
 
@@ -358,7 +358,7 @@ exports.generateNode = function(node, state, defaultId, isTopLevel, isModelOrCol
 
 	// handle any events from markup
 	if (args.events && args.events.length > 0 &&
-		!_.contains(CONST.SKIP_EVENT_HANDLING, args.fullname) &&
+		!_.includes(CONST.SKIP_EVENT_HANDLING, args.fullname) &&
 		!state.isViewTemplate) {
 		// determine which function name to use for event handling:
 		// * addEventListener() for Titanium proxies
@@ -376,12 +376,12 @@ exports.generateNode = function(node, state, defaultId, isTopLevel, isModelOrCol
 			}, postCode;
 
 			// create templates for immediate and deferred event handler creation
-			var theDefer = _.template("__defers['<%= obj %>!<%= ev %>!<%= escapedCb %>']", eventObj);
+			var theDefer = _.template("__defers['<%= obj %>!<%= ev %>!<%= escapedCb %>']")(eventObj);
 			var theEvent;
 			if (eventFunc === 'addEventListener') {
-				theEvent = _.template("$.addListener(<%= obj %>,'<%= ev %>',<%= cb %>)", eventObj);
+				theEvent = _.template("$.addListener(<%= obj %>,'<%= ev %>',<%= cb %>)")(eventObj);
 			} else {
-				theEvent = _.template("<%= obj %>.<%= func %>('<%= ev %>',<%= cb %>)", eventObj);
+				theEvent = _.template("<%= obj %>.<%= func %>('<%= ev %>',<%= cb %>)")(eventObj);
 			}
 			var deferTemplate = theDefer + " && " + theEvent + ";";
 			var immediateTemplate;
@@ -392,9 +392,9 @@ exports.generateNode = function(node, state, defaultId, isTopLevel, isModelOrCol
 			}
 
 			// add the generated code to the view code and post-controller code respectively
-			code.content += _.template(immediateTemplate, eventObj);
-			postCode = _.template(deferTemplate, eventObj);
-			exports.postCode += state.condition ? _.template(codeTemplate, {
+			code.content += _.template(immediateTemplate)(eventObj);
+			postCode = _.template(deferTemplate)(eventObj);
+			exports.postCode += state.condition ? _.template(codeTemplate)({
 				condition: state.condition,
 				content: postCode
 			}) : postCode;
@@ -419,11 +419,11 @@ exports.generateNode = function(node, state, defaultId, isTopLevel, isModelOrCol
 	}
 
 	if (!isModelOrCollection) {
-		return code.condition ? _.template(codeTemplate, code) : code.content;
+		return code.condition ? _.template(codeTemplate)(code) : code.content;
 	} else {
 		return {
-			content: code.condition ? _.template(codeTemplate, code) : code.content,
-			pre: code.condition ? _.template(codeTemplate, {content:code.pre}) : code.pre
+			content: code.condition ? _.template(codeTemplate)(code) : code.content,
+			pre: code.condition ? _.template(codeTemplate)({content:code.pre}) : code.pre
 		};
 	}
 };
@@ -566,7 +566,7 @@ exports.inspectRequireNode = function(node) {
 		var args = exports.getParserArgs(c);
 
 		// skip model elements when inspecting nodes for <Require>
-		if (_.contains(CONST.MODEL_ELEMENTS, args.fullname)) {
+		if (_.includes(CONST.MODEL_ELEMENTS, args.fullname)) {
 			newNode.removeChild(c);
 			return;
 		}
@@ -599,7 +599,7 @@ exports.copyWidgetResources = function(resources, resourceDir, widgetId, opts) {
 			// make sure the file exists and that it is not filtered
 			if (!fs.existsSync(source) ||
 				(opts.filter && opts.filter.test(file)) ||
-				(opts.exceptions && _.contains(opts.exceptions, file))) {
+				(opts.exceptions && _.includes(opts.exceptions, file))) {
 				return;
 			}
 
@@ -925,7 +925,7 @@ exports.validateNodeName = function(node, names) {
 	if (fullname === 'Alloy.Require' || fullname === 'Alloy.Widget') {
 		var inspect = exports.inspectRequireNode(node);
 		ret = _.find(inspect.children, function(n) {
-			return _.contains(names, exports.getNodeFullname(n));
+			return _.includes(names, exports.getNodeFullname(n));
 		});
 		if (ret) {
 			return exports.getNodeFullname(ret);
@@ -940,7 +940,7 @@ exports.generateCollectionBindingTemplate = function(args) {
 
 	// Determine the collection variable to use
 	var obj = { name: args[CONST.BIND_COLLECTION] };
-	var col = _.template((exports.currentManifest ? CONST.WIDGET_OBJECT : 'Alloy') + ".Collections['<%= name %>'] || <%= name %>", obj);
+	var col = _.template((exports.currentManifest ? CONST.WIDGET_OBJECT : 'Alloy') + ".Collections['<%= name %>'] || <%= name %>")(obj);
 	var colVar = exports.generateUniqueId();
 
 	// Create the code for the filter and transform functions

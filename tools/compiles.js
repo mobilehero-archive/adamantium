@@ -2,7 +2,7 @@ var async = require('async'),
 	path = require('path'),
 	exec = require('child_process').exec,
 	platforms = require('../platforms'),
-	_ = require('../Alloy/lib/alloy/underscore');
+	_ = require('lodash');
 
 var harnessPath = path.join(__dirname, '..', 'test', 'projects', 'Harness');
 
