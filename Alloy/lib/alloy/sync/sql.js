@@ -1,4 +1,4 @@
-var _ = require('lodash'),
+var _ = require('/alloy/lodash'),
 	backbone = require('alloy/backbone');
 
 // The database name used when none is specified in the

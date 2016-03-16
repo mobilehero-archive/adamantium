@@ -36,7 +36,7 @@ Backbone.VERSION = '0.9.2';
 
 // Require Underscore, if we're on the server, and it's not already present.
 var _ = root._;
-if (!_ && (typeof require !== 'undefined')) _ = require('lodash');
+if (!_ && (typeof require !== 'undefined')) _ = require('/alloy/lodash');
 
 // For Backbone's purposes, jQuery, Zepto, or Ender owns the `$` variable.
 var $ = root.jQuery || root.Zepto || root.ender;

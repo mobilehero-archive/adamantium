@@ -23,7 +23,7 @@
  * For guides on using Alloy, see
  * [Alloy Framework](http://docs.appcelerator.com/platform/latest/#!/guide/Alloy_Framework).
  */
-var _ = require('lodash'),
+var _ = require('/alloy/lodash'),
 	Backbone = require('/alloy/backbone'),
 	CONST = require('/alloy/constants');
 	

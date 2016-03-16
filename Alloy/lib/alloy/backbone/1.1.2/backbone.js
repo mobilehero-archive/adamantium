@@ -9,7 +9,7 @@
 
   // Set up Backbone appropriately for the environment. Start with Node.js or CommonJS
   if (typeof exports !== 'undefined') {
-      var _ = require('lodash');
+      var _ = require('/alloy/lodash');
       factory(root, exports, _);
 
   // Next for AMD.

@@ -4,7 +4,7 @@
  * Declare variables needed for this module
  */
 // var _ = require("./underscore");
-var _ = require("lodash");
+var _ = require("./lodash");
 var path = require("path");
 
 /**
