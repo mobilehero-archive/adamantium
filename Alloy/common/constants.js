@@ -1,11 +1,12 @@
 var isTitanium = typeof Titanium !== 'undefined';
-var _, generatePlatformArray;
+var generatePlatformArray;
+var _ = require("lodash");
 
 if (isTitanium) {
-	_ = require('alloy/underscore')._;
+	// _ = require('alloy/underscore')._;
 } else {
 	var platforms = require('../../platforms/index');
-	_ = require("lodash");
+	// _ = require("lodash");
 
 	// iterate through supported platforms to create specific constants
 	generatePlatformArray = function(key) {
@@ -54,7 +55,9 @@ exports.AUTOSTYLE_PROPERTY = 'autoStyle';
 exports.BABEL_PROPERTY = 'babeljs';
 exports.DOCROOT_MODULE_PROPERTY = "module";
 exports.DOCROOT_BASECONTROLLER_PROPERTY = "baseController";
+exports.LODASH_PROPERTY = "lodash";
 exports.NODEJS_MODULE_RESOLUTION = "nodejs_require";
+
 
 // Constants related to model-view binding
 exports.BIND_PROPERTIES = ['dataCollection','dataFilter','dataTransform','dataFunction'];

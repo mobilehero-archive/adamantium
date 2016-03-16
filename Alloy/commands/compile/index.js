@@ -502,6 +502,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
     CU.postCode = '';
     CU[CONST.AUTOSTYLE_PROPERTY] = compileConfig[CONST.AUTOSTYLE_PROPERTY];
     CU[CONST.BABEL_PROPERTY] = compileConfig[CONST.BABEL_PROPERTY];
+    CU[CONST.LODASH_PROPERTY] = compileConfig[CONST.LODASH_PROPERTY];
     CU[CONST.NODEJS_MODULE_RESOLUTION] = compileConfig[CONST.NODEJS_MODULE_RESOLUTION];
     CU.currentManifest = manifest;
     CU.currentDefaultId = viewName;
@@ -721,7 +722,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 
     // process the bindingsMap, if it contains any data bindings
     var bTemplate = "$.<%= id %>.<%= prop %>=_.isFunction(<%= model %>.transform)?";
-    bTemplate += "<%= model %>.transform()['<%= attr %>']: _.template('<%= tplVal %>', {<%= mname %>: <%= model %>.toJSON()});";
+    bTemplate += "<%= model %>.transform()['<%= attr %>']: _.template('<%= tplVal %>')({<%= mname %>: <%= model %>.toJSON()});";
 
     // for each model variable in the bindings map...
     _.each(styler.bindingsMap, function(mapping, modelVar) {

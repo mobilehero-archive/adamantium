@@ -23,13 +23,16 @@
  * For guides on using Alloy, see
  * [Alloy Framework](http://docs.appcelerator.com/platform/latest/#!/guide/Alloy_Framework).
  */
-var _ = require('/alloy/underscore')._,
+var _ = require('lodash'),
 	Backbone = require('/alloy/backbone'),
 	CONST = require('/alloy/constants');
-
+	
 exports.version = '<%= version %>';
 exports._ = _;
 exports.Backbone = Backbone;
+
+// alleviate some compatibility issues that may arise between underscore and lodash
+exports._.mixin({ pluck: _.map, contains: _.includes });
 
 var DEFAULT_WIDGET = 'widget';
 var TI_VERSION = Ti.version;
@@ -278,7 +281,7 @@ exports.createStyle = function(controller, opts, defaults) {
 
 		// does this style match the given opts?
 		if ((style.isId && opts.id && style.key === opts.id) ||
-			(style.isClass && _.contains(classes, style.key))) {
+			(style.isClass && _.includes(classes, style.key))) {
 			// do nothing here, keep on processing
 		} else if (style.isApi) {
 			if (style.key.indexOf('.') === -1) {

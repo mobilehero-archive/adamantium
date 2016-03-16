@@ -3,7 +3,8 @@
 /**
  * Declare variables needed for this module
  */
-var _ = require("./underscore");
+// var _ = require("./underscore");
+var _ = require("lodash");
 var path = require("path");
 
 /**
@@ -202,7 +203,7 @@ var load_as_file = function load_as_file(request, startpath) {
 
     var module_path;
     var resolved_path = path.posix.resolve(startpath, request);
-    _.contains(__registry.files, resolved_path) && (module_path = resolved_path);
+    _.includes(__registry.files, resolved_path) && (module_path = resolved_path);
     if (module_path) {
         logger.trace("file found: " + module_path);
         return module_path;
@@ -213,7 +214,7 @@ var load_as_file = function load_as_file(request, startpath) {
         var exts = [".js", ".json"];
         _.forEach(exts, function(ext) {
             resolved_path = path.posix.resolve(startpath, request + ext);
-            _.contains(__registry.files, resolved_path) && (module_path = resolved_path);
+            _.includes(__registry.files, resolved_path) && (module_path = resolved_path);
             if (!module_path) {
                 return !module_path;
             }

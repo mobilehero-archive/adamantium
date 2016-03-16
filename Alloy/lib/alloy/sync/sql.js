@@ -1,4 +1,4 @@
-var _ = require('alloy/underscore')._,
+var _ = require('lodash'),
 	backbone = require('alloy/backbone');
 
 // The database name used when none is specified in the
@@ -442,7 +442,7 @@ function installDatabase(config) {
 
 	// make sure we have a unique id field
 	if (config.adapter.idAttribute) {
-		if (!_.contains(_.keys(config.columns), config.adapter.idAttribute)) {
+		if (!_.includes(_.keys(config.columns), config.adapter.idAttribute)) {
 			throw 'config.adapter.idAttribute "' + config.adapter.idAttribute + '" not found in list of columns for table "' + table + '"\n' +
 				'columns: [' + _.keys(config.columns).join(',') + ']';
 		}
