@@ -149,13 +149,14 @@ module.exports = function(args, program) {
     logger.debug('----- BASE RUNTIME FILES -----');
     U.installPlugin(path.join(alloyRoot, '..'), paths.project);
 
-    // copy in all lib resources from alloy module, exclude backbone dir
+    // copy in all lib resources from alloy module, exclude backbone and lodash dir
+    var excludedDirectories = ['backbone','lodash'];
     updateFilesWithBuildLog(
         path.join(alloyRoot, 'lib'),
         path.join(paths.resources, titaniumFolder),
         {
             rootDir: paths.project,
-            filter: new RegExp('^alloy[\\/\\\\]backbone([\\/\\\\]|$)'),
+            filter: new RegExp('^alloy[\\/\\\\][' + excludedDirectories.join("|") + ']([\\/\\\\]|$)'),
             exceptions: _.map(_.difference(CONST.ADAPTERS, compileConfig.adapters), function(a) {
                 return path.join('alloy', 'sync', a + '.js');
             }),
@@ -173,6 +174,26 @@ module.exports = function(args, program) {
         ),
         path.join(paths.resources, titaniumFolder, "alloy", "backbone.js")
     );
+    
+    if (compileConfig[CONST.LODASH_PROPERTY] && compileConfig[CONST.LODASH_PROPERTY].enabled) {
+        // Copy the version of lodash/underscore that is specified in config.json
+        U.copyFileSync(
+            path.join(
+                alloyRoot, "lib", "alloy", "lodash",
+                (_.includes(CONST.SUPPORTED_LODASH_VERSIONS, compileConfig[CONST.LODASH_PROPERTY].version))
+                    ? compileConfig[CONST.LODASH_PROPERTY].version
+                    : CONST.DEFAULT_LODASH_VERSION,
+                "lodash.js"
+            ),
+            path.join(paths.resources, titaniumFolder, "alloy", "lodash.js")
+        );
+    } else {
+        U.copyFileSync(
+            path.join(alloyRoot, "lib", "alloy", "underscore.js"),
+            path.join(paths.resources, titaniumFolder, "alloy", "lodash.js")
+        );
+    }
+        
 
     if (restrictionPath === null) {
         // Generate alloy.js from template
@@ -1084,6 +1105,7 @@ function optimizeCompiledCode(alloyConfig, paths) {
             'alloy/backbone.js',
             'alloy/constants.js',
             'alloy/underscore.js',
+            'alloy/lodash.js',
             'alloy/widget.js'
         ];
         _.each(exceptions.slice(0), function(ex) {

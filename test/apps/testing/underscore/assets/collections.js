@@ -250,7 +250,7 @@ $(document).ready(function() {
 
   test('pluck', function() {
     var people = [{name : 'moe', age : 30}, {name : 'curly', age : 50}];
-    equal(_.map(people, 'name').join(', '), 'moe, curly', 'pulls names out of objects');
+    equal(_.pluck(people, 'name').join(', '), 'moe, curly', 'pulls names out of objects');
   });
 
   test('where', function() {
@@ -304,7 +304,7 @@ $(document).ready(function() {
   test('sortBy', function() {
     var people = [{name : 'curly', age : 50}, {name : 'moe', age : 30}];
     people = _.sortBy(people, function(person){ return person.age; });
-    equal(_.map(people, 'name').join(', '), 'moe, curly', 'stooges sorted by age');
+    equal(_.pluck(people, 'name').join(', '), 'moe, curly', 'stooges sorted by age');
 
     var list = [undefined, 4, 1, undefined, 3, 2];
     equal(_.sortBy(list, _.identity).join(','), '1,2,3,4,,', 'sortBy with undefined values');
