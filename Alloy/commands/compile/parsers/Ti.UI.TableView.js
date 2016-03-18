@@ -209,7 +209,7 @@ function parse(node, state, args) {
 	// finally, fill in any model-view binding code, if present
 	if (isDataBound) {
 		localModel = localModel || CU.generateUniqueId();
-		code += _.template(CU.generateCollectionBindingTemplate(args), {
+		code += _.template(CU.generateCollectionBindingTemplate(args))({
 			localModel: localModel,
 			pre: "var rows=[];",
 			items: itemCode,

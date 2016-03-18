@@ -31,8 +31,9 @@ exports.version = '<%= version %>';
 exports._ = _;
 exports.Backbone = Backbone;
 
+
 // alleviate some compatibility issues that may arise between underscore and lodash
-exports._.mixin({ pluck: _.map, contains: _.includes });
+!_.pluck && _.mixin({ pluck: _.map, contains: _.includes });
 
 var DEFAULT_WIDGET = 'widget';
 var TI_VERSION = Ti.version;

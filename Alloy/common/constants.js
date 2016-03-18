@@ -1,12 +1,12 @@
 var isTitanium = typeof Titanium !== 'undefined';
 var generatePlatformArray;
-var _ = require("lodash");
+var _;
 
 if (isTitanium) {
-	// _ = require('alloy/underscore')._;
+    _ = require('alloy/lodash');
 } else {
 	var platforms = require('../../platforms/index');
-	// _ = require("lodash");
+	_ = require("lodash");
 
 	// iterate through supported platforms to create specific constants
 	generatePlatformArray = function(key) {
