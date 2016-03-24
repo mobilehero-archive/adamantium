@@ -360,9 +360,10 @@ exports.processStyle = function(_style, _state) {
 					code += prefix + matches[1] + ','; // matched a JS expression
 				} else {
 					if(typeof style.type !== 'undefined' && typeof style.type.indexOf === 'function' && (style.type).indexOf('UI.PICKER') !== -1 && value !== 'picker') {
-						// ALOY-263, support date/time style pickers
-						var d = U.createDate(value);
 						if(DATEFIELDS.indexOf(sn) !== -1) {
+							// ALOY-263, support date/time style pickers
+							var d = U.createDate(value);
+
 							if(U.isValidDate(d, sn)) {
 								code += prefix + 'new Date("'+d.toString()+'"),';
 							}
@@ -517,7 +518,7 @@ exports.generateStyleParams = function(styles,classes,id,apiName,extraStyle,theS
 					var parts = match[1].split('.'),
 						partsLen = parts.length,
 						modelVar,
-						templateStr = v.replace(/\{[\$\.]*/g, '<%=').replace(/\}/g, '%>');
+						templateStr = v;
 
 					// model binding
 					if (parts.length > 1) {
@@ -567,18 +568,11 @@ exports.generateStyleParams = function(styles,classes,id,apiName,extraStyle,theS
 					// collection binding
 					else {
 						modelVar = theState && theState.model ? theState.model : CONST.BIND_MODEL_VAR;
-						var bindingStr = templateStr.replace(/<%=([\s\S]+?)%>/g, function(match, code) {
-							var v = code.replace(/\\'/g, "'");
-							return "'+" + modelVar +".get('" + v.trim() + "') +'";
+						var bindingStr = _.template("_.template('<%= templateStr %>', <%= modelVar %>." + CONST.BIND_TRANSFORM_VAR + ", { interpolate: /\\{([\\s\\S]+?)\\}/g })", {
+							templateStr: templateStr,
+							modelVar: modelVar
 						});
-						var transform = modelVar + "." + CONST.BIND_TRANSFORM_VAR + "['" + match[1].trim() + "']";
-
-						// remove the first '+ and last +'
-						var bStr = bindingStr.match(/^\s*\'\+(.*)\+\'\s*$/),
-							standard = (bStr) ? bStr[1] : bindingStr;
-
-						var modelCheck = "typeof " + transform + " !== 'undefined' ? " + transform + " : " + standard;
-						style.style[k] = STYLE_EXPR_PREFIX + modelCheck;
+						style.style[k] = STYLE_EXPR_PREFIX + bindingStr;
 					}
 				}
 			}
