@@ -28,6 +28,8 @@ exports.ALLOY_RUNTIME_DIR = 'alloy';
 exports.RESOURCES_DIR = 'Resources';
 exports.NAME_DEFAULT = 'index';
 exports.NAME_WIDGET_DEFAULT = 'widget';
+exports.NPM_WIDGET_PREFIX = 'alloy-widget-';
+exports.NPM_WIDGET_KEYWORDS = ['appcelerator', 'titanium', 'alloy', 'widget'];
 exports.GLOBAL_STYLE = 'app.tss';
 exports.ROOT_NODE = 'Alloy';
 exports.NAMESPACE_DEFAULT = 'Ti.UI';
@@ -114,9 +116,7 @@ exports.DIR = {
 	THEME: 'themes',
 	BUILD: 'build/alloy',
 	I18N: 'i18n',
-	PLATFORM: 'platform',
-	BUILD_I18N: 'build/i18n',
-	BUILD_PLATFORM: 'build/platform'
+	PLATFORM: 'platform'
 };
 // folders/files to exclude when copying and processing files
 // RegEx format: must escape special chars - so use \.svn not .svn
