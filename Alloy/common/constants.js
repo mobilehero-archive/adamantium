@@ -28,6 +28,8 @@ exports.ALLOY_RUNTIME_DIR = 'alloy';
 exports.RESOURCES_DIR = 'Resources';
 exports.NAME_DEFAULT = 'index';
 exports.NAME_WIDGET_DEFAULT = 'widget';
+exports.NPM_WIDGET_PREFIX = 'alloy-widget-';
+exports.NPM_WIDGET_KEYWORDS = ['appcelerator', 'titanium', 'alloy', 'widget'];
 exports.GLOBAL_STYLE = 'app.tss';
 exports.ROOT_NODE = 'Alloy';
 exports.NAMESPACE_DEFAULT = 'Ti.UI';
@@ -54,6 +56,7 @@ exports.AUTOSTYLE_PROPERTY = 'autoStyle';
 exports.BABEL_PROPERTY = 'babeljs';
 exports.DOCROOT_MODULE_PROPERTY = "module";
 exports.DOCROOT_BASECONTROLLER_PROPERTY = "baseController";
+exports.NODEJS_MODULE_RESOLUTION = "nodejs_require";
 
 // Constants related to model-view binding
 exports.BIND_PROPERTIES = ['dataCollection','dataFilter','dataTransform','dataFunction'];
@@ -113,9 +116,7 @@ exports.DIR = {
 	THEME: 'themes',
 	BUILD: 'build/alloy',
 	I18N: 'i18n',
-	PLATFORM: 'platform',
-	BUILD_I18N: 'build/i18n',
-	BUILD_PLATFORM: 'build/platform'
+	PLATFORM: 'platform'
 };
 // folders/files to exclude when copying and processing files
 // RegEx format: must escape special chars - so use \.svn not .svn
