@@ -135,7 +135,7 @@ module.exports = function(args, program) {
 		var warned = false;
 		Object.keys(folders).some(function (dir) {
 			if (!folders[dir]) {
-				logger.warn('Generated "' + dir + '" folder is not in ignored by Git, please add it to your .gitignore');
+				logger.warn('Generated "' + dir + '" directory is not ignored by Git, please add it to your .gitignore');
 				warned = true;
 			}
 		});
@@ -711,11 +711,24 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
         }
 
         // see if baseController attribute has been set on the docRoot (<Alloy>) tag for the view
-        if (docRoot.hasAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY)) {
-            CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = '"' + docRoot.getAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY) + '"';
-        } else {
-            CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = null;
-        }
+        if(docRoot.hasAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY)) {
+			CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = '"' + docRoot.getAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY) + '"';
+		} else {
+			CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = null;
+		}
+
+		// make sure we have a Window, TabGroup, or SplitWindow
+		var rootChildren = U.XML.getElementsFromNodes(docRoot.childNodes);
+		if (viewName === 'index' && !dirname) {
+			var valid = [
+				'Ti.UI.Window',
+				'Ti.UI.iOS.SplitWindow',
+				'Ti.UI.TabGroup',
+				'Ti.UI.iOS.NavigationWindow'
+			].concat(CONST.MODEL_ELEMENTS);
+			_.each(rootChildren, function(node) {
+				var found = true;
+				var args = CU.getParserArgs(node, {}, { doSetId: false });
 
         // make sure we have a Window, TabGroup, or SplitWindow
         var rootChildren = U.XML.getElementsFromNodes(docRoot.childNodes);
@@ -781,7 +794,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 	}
 	var cCode = CU.loadController(files.CONTROLLER);
 	template.parentController = (cCode.parentControllerName !== '') ?
-		cCode.parentControllerName : "'BaseController'";
+		cCode.parentControllerName : CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] || "'BaseController'";
 	template.__MAPMARKER_CONTROLLER_CODE__ += cCode.controller;
 	template.preCode += cCode.pre;
 
@@ -800,18 +813,25 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
     var bTemplate = "$.<%= id %>.<%= prop %>=_.isFunction(<%= model %>.transform)?";
     bTemplate += "<%= model %>.transform()['<%= attr %>']: _.template('<%= tplVal %>', {<%= mname %>: <%= model %>.toJSON()});";
 
-    // for each model variable in the bindings map...
-    _.each(styler.bindingsMap, function(mapping, modelVar) {
+		// open the model binding handler
+		var handlerVar = CU.generateUniqueId();
+		template.viewCode += 'var ' + handlerVar + ' = function() {';
 
-        // open the model binding handler
-        var handlerVar = CU.generateUniqueId();
-        template.viewCode += 'var ' + handlerVar + '=function() {';
-        CU.destroyCode += modelVar + " && " + ((state.parentFormFactor) ? 'is' + U.ucfirst(state.parentFormFactor) : '') +
-            modelVar + ".off('" + CONST.MODEL_BINDING_EVENTS + "'," + handlerVar + ");";
+		_.each(mapping.models, function(modelVar) {
+			template.viewCode += modelVar + '.__transform = _.isFunction(' + modelVar + '.transform) ? ' + modelVar + '.transform() : ' + modelVar + '.toJSON();';
+		});
 
-        // for each specific conditional within the bindings map....
-        _.each(_.groupBy(mapping, function(b) { return b.condition; }), function(bindings, condition) {
-            var bCode = '';
+		CU.destroyCode += modelVar + " && " + ((state.parentFormFactor) ? 'is' + U.ucfirst(state.parentFormFactor) : '' ) +
+			modelVar + ".off('" + CONST.MODEL_BINDING_EVENTS + "'," + handlerVar + ");";
+
+		// for each specific conditional within the bindings map....
+		_.each(_.groupBy(mapping.bindings, function(b){return b.condition;}), function(bindings,condition) {
+			var bCode = '';
+
+			// for each binding belonging to this model/conditional pair...
+			_.each(bindings, function(binding) {
+				bCode += "$." + binding.id + "." + binding.prop + " = " + binding.val + ";";
+			});
 
             // for each binding belonging to this model/conditional pair...
             _.each(bindings, function(binding) {
