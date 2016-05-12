@@ -92,6 +92,14 @@ Transform your javascript code using BabelJS.  Simply add a `babeljs` entry to t
 
 You can now use (some) ES2015 code in your controllers and other javascript files.  This is done by transforming your javascript code using BabelJS.  Simply add the `es2015` preset to the  `babeljs` entry in your `config.json` file in your project. 
 
+Run the following in the root directory of your project.  (Directory that contains Tiapp.xml)
+
+```bash
+npm install --save babel-preset-es2015
+```
+
+**config.json**
+
 ```json
 {
     "global": {},
