@@ -135,7 +135,7 @@ module.exports = function(args, program) {
 		var warned = false;
 		Object.keys(folders).some(function (dir) {
 			if (!folders[dir]) {
-				logger.warn('Generated "' + dir + '" folder is not in ignored by Git, please add it to your .gitignore');
+				logger.warn('Generated "' + dir + '" directory is not ignored by Git, please add it to your .gitignore');
 				warned = true;
 			}
 		});
@@ -711,45 +711,45 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
         }
 
         // see if baseController attribute has been set on the docRoot (<Alloy>) tag for the view
-        if (docRoot.hasAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY)) {
-            CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = '"' + docRoot.getAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY) + '"';
-        } else {
-            CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = null;
-        }
+        if(docRoot.hasAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY)) {
+			CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = '"' + docRoot.getAttribute(CONST.DOCROOT_BASECONTROLLER_PROPERTY) + '"';
+		} else {
+			CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] = null;
+		}
 
-        // make sure we have a Window, TabGroup, or SplitWindow
-        var rootChildren = U.XML.getElementsFromNodes(docRoot.childNodes);
-        if (viewName === 'index' && !dirname) {
-            var valid = [
-                'Ti.UI.Window',
-                'Ti.UI.iOS.SplitWindow',
-                'Ti.UI.TabGroup',
-                'Ti.UI.iOS.NavigationWindow'
-            ].concat(CONST.MODEL_ELEMENTS);
-            _.each(rootChildren, function(node) {
-                var found = true;
-                var args = CU.getParserArgs(node, {}, { doSetId: false });
+		// make sure we have a Window, TabGroup, or SplitWindow
+		var rootChildren = U.XML.getElementsFromNodes(docRoot.childNodes);
+		if (viewName === 'index' && !dirname) {
+			var valid = [
+				'Ti.UI.Window',
+				'Ti.UI.iOS.SplitWindow',
+				'Ti.UI.TabGroup',
+				'Ti.UI.iOS.NavigationWindow'
+			].concat(CONST.MODEL_ELEMENTS);
+			_.each(rootChildren, function(node) {
+				var found = true;
+				var args = CU.getParserArgs(node, {}, { doSetId: false });
 
-                if (args.fullname === 'Alloy.Require') {
-                    var inspect = CU.inspectRequireNode(node);
-                    for (var j = 0; j < inspect.names.length; j++) {
-                        if (!_.contains(valid, inspect.names[j])) {
-                            found = false;
-                            break;
-                        }
-                    }
-                } else {
-                    found = _.contains(valid, args.fullname);
-                }
+				if (args.fullname === 'Alloy.Require') {
+					var inspect = CU.inspectRequireNode(node);
+					for (var j = 0; j < inspect.names.length; j++) {
+						if (!_.contains(valid, inspect.names[j])) {
+							found = false;
+							break;
+						}
+					}
+				} else {
+					found = _.contains(valid, args.fullname);
+				}
 
-                if (!found) {
-                    U.die([
-                        'Compile failed. index.xml must have a top-level container element.',
-                        'Valid elements: [' + valid.join(',') + ']'
-                    ]);
-                }
-            });
-        }
+				if (!found) {
+					U.die([
+						'Compile failed. index.xml must have a top-level container element.',
+						'Valid elements: [' + valid.join(',') + ']'
+					]);
+				}
+			});
+		}
 
         // process any model/collection nodes
         _.each(rootChildren, function(node, i) {
@@ -769,10 +769,21 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
         // rebuild the children list since model elements have been removed
         rootChildren = U.XML.getElementsFromNodes(docRoot.childNodes);
 
-        // process the UI nodes
-        _.each(rootChildren, function(node, i) {
-            // should we use the default id?
-            var defaultId = CU.isNodeForCurrentPlatform(node) ? viewName : undefined;
+		// process the UI nodes
+		_.each(rootChildren, function(node, i) {
+			// should we use the default id?
+			var defaultId = CU.isNodeForCurrentPlatform(node) ? viewName : undefined;
+
+			// generate the code for this node
+			var fullname = CU.getNodeFullname(node);
+			template.viewCode += CU.generateNode(node, {
+				parent:{},
+				styles:state.styles,
+				widgetId: manifest ? manifest.id : undefined,
+				parentFormFactor: node.hasAttribute('formFactor') ? node.getAttribute('formFactor') : undefined
+			}, defaultId, true);
+		});
+	}
 
 	// process the controller code
 	if (fs.existsSync(files.CONTROLLER)) {
@@ -781,7 +792,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 	}
 	var cCode = CU.loadController(files.CONTROLLER);
 	template.parentController = (cCode.parentControllerName !== '') ?
-		cCode.parentControllerName : "'BaseController'";
+		cCode.parentControllerName : CU[CONST.DOCROOT_BASECONTROLLER_PROPERTY] || "'BaseController'";
 	template.__MAPMARKER_CONTROLLER_CODE__ += cCode.controller;
 	template.preCode += cCode.pre;
 
@@ -796,35 +807,29 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
     template.__MAPMARKER_CONTROLLER_CODE__ += cCode.controller;
     template.preCode += cCode.pre;
 
-    // process the bindingsMap, if it contains any data bindings
-    var bTemplate = "$.<%= id %>.<%= prop %>=_.isFunction(<%= model %>.transform)?";
-    bTemplate += "<%= model %>.transform()['<%= attr %>']: _.template('<%= tplVal %>', {<%= mname %>: <%= model %>.toJSON()});";
+	// for each model variable in the bindings map...
+	_.each(styler.bindingsMap, function(mapping,modelVar) {
 
-    // for each model variable in the bindings map...
-    _.each(styler.bindingsMap, function(mapping, modelVar) {
+		// open the model binding handler
+		var handlerVar = CU.generateUniqueId();
+		template.viewCode += 'var ' + handlerVar + ' = function() {';
 
-        // open the model binding handler
-        var handlerVar = CU.generateUniqueId();
-        template.viewCode += 'var ' + handlerVar + '=function() {';
-        CU.destroyCode += modelVar + " && " + ((state.parentFormFactor) ? 'is' + U.ucfirst(state.parentFormFactor) : '') +
-            modelVar + ".off('" + CONST.MODEL_BINDING_EVENTS + "'," + handlerVar + ");";
+		_.each(mapping.models, function(modelVar) {
+			template.viewCode += modelVar + '.__transform = _.isFunction(' + modelVar + '.transform) ? ' + modelVar + '.transform() : ' + modelVar + '.toJSON();';
+		});
 
-        // for each specific conditional within the bindings map....
-        _.each(_.groupBy(mapping, function(b) { return b.condition; }), function(bindings, condition) {
-            var bCode = '';
+		CU.destroyCode += modelVar + " && " + ((state.parentFormFactor) ? 'is' + U.ucfirst(state.parentFormFactor) : '' ) +
+			modelVar + ".off('" + CONST.MODEL_BINDING_EVENTS + "'," + handlerVar + ");";
 
-            // for each binding belonging to this model/conditional pair...
-            _.each(bindings, function(binding) {
-                bCode += _.template(bTemplate, {
-                    id: binding.id,
-                    prop: binding.prop,
-                    model: modelVar,
-                    attr: binding.attr,
-                    mname: binding.mname,
-                    tplVal: binding.tplVal
-                });
-            });
+	// for each specific conditional within the bindings map....
+		_.each(_.groupBy(mapping.bindings, function(b){return b.condition;}), function(bindings,condition) {
+			var bCode = '';
 
+			// for each binding belonging to this model/conditional pair...
+			_.each(bindings, function(binding) {
+				bCode += "$." + binding.id + "." + binding.prop + " = " + binding.val + ";";
+			});
+            
             // if this is a legit conditional, wrap the binding code in it
             if (typeof condition !== 'undefined' && condition !== 'undefined') {
                 bCode = 'if(' + condition + '){' + bCode + '}';
@@ -860,118 +865,130 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
     var code = _.template(fs.readFileSync(
         path.join(compileConfig.dir.template, 'component.js'), 'utf8'), template);
 
+	// prep the controller paths based on whether it's an app
+	// controller or widget controller
+	var targetFilepath = path.join(compileConfig.dir.resources, titaniumFolder,
+		path.relative(compileConfig.dir.resources, files.COMPONENT));
+	var runtimeStylePath = path.join(compileConfig.dir.resources, titaniumFolder,
+		path.relative(compileConfig.dir.resources, files.RUNTIME_STYLE));
+	if (manifest) {
+		wrench.mkdirSyncRecursive(
+			path.join(compileConfig.dir.resources, titaniumFolder, 'alloy', CONST.DIR.WIDGET,
+				manifest.id, widgetDir),
+			0755
+		);
+		wrench.mkdirSyncRecursive(
+			path.join(compileConfig.dir.resources, titaniumFolder, 'alloy', CONST.DIR.WIDGET,
+				manifest.id, widgetStyleDir),
+			0755
+		);
+
 		// [ALOY-967] merge "i18n" dir in widget folder
 		CU.mergeI18N(path.join(dir, 'i18n'), path.join(compileConfig.dir.project, 'i18n'), { override: false });
 		widgetIds.push(manifest.id);
 
-        // [ALOY-967] merge "i18n" dir in widget folder
-        if (fs.existsSync(path.join(dir, CONST.DIR.I18N))) {
-            CU.mergeI18n(path.join(dir, CONST.DIR.I18N), compileConfig.dir, { override: false });
-        }
-        widgetIds.push(manifest.id);
+		CU.copyWidgetResources(
+			[path.join(dir,CONST.DIR.ASSETS), path.join(dir,CONST.DIR.LIB)],
+			path.join(compileConfig.dir.resources, titaniumFolder),
+			manifest.id,
+			{
+				filter: new RegExp('^(?:' + otherPlatforms.join('|') + ')[\\/\\\\]'),
+				exceptions: otherPlatforms,
+				titaniumFolder: titaniumFolder,
+				theme: theme
+			}
+		);
+		targetFilepath = path.join(
+			compileConfig.dir.resources, titaniumFolder, 'alloy', CONST.DIR.WIDGET, manifest.id,
+			widgetDir, viewName + '.js'
+		);
+		runtimeStylePath = path.join(
+			compileConfig.dir.resources, titaniumFolder, 'alloy', CONST.DIR.WIDGET, manifest.id,
+			widgetStyleDir, viewName + '.js'
+		);
+	}
 
-        CU.copyWidgetResources(
-            [path.join(dir, CONST.DIR.ASSETS), path.join(dir, CONST.DIR.LIB)],
-            path.join(compileConfig.dir.resources, titaniumFolder),
-            manifest.id,
-            {
-                filter: new RegExp('^(?:' + otherPlatforms.join('|') + ')[\\/\\\\]'),
-                exceptions: otherPlatforms,
-                titaniumFolder: titaniumFolder,
-                theme: theme
-            }
-        );
-        targetFilepath = path.join(
-            compileConfig.dir.resources, titaniumFolder, 'alloy', CONST.DIR.WIDGET, manifest.id,
-            widgetDir, viewName + '.js'
-        );
-        runtimeStylePath = path.join(
-            compileConfig.dir.resources, titaniumFolder, 'alloy', CONST.DIR.WIDGET, manifest.id,
-            widgetStyleDir, viewName + '.js'
-        );
-    }
+	// generate the code and source map for the current controller
+	sourceMapper.generateCodeAndSourceMap({
+		target: {
+			filename: path.relative(compileConfig.dir.project,files.COMPONENT),
+			filepath: targetFilepath,
+			templateContent: code
+		},
+		data: {
+			__MAPMARKER_CONTROLLER_CODE__: {
+				filename: path.relative(compileConfig.dir.project,files.CONTROLLER),
+				fileContent: controllerCode
+			}
+		}
+	}, compileConfig);
 
-    // generate the code and source map for the current controller
-    sourceMapper.generateCodeAndSourceMap({
-        target: {
-            filename: path.relative(compileConfig.dir.project, files.COMPONENT),
-            filepath: targetFilepath,
-            templateContent: code
-        },
-        data: {
-            __MAPMARKER_CONTROLLER_CODE__: {
-                filename: path.relative(compileConfig.dir.project, files.CONTROLLER),
-                fileContent: controllerCode
-            }
-        }
-    }, compileConfig);
+	// initiate runtime style module creation
+	var relativeStylePath = path.relative(compileConfig.dir.project, runtimeStylePath);
+	logger.info('  created:     "' + relativeStylePath + '"');
 
-    // initiate runtime style module creation
-    var relativeStylePath = path.relative(compileConfig.dir.project, runtimeStylePath);
-    logger.info('  created:     "' + relativeStylePath + '"');
+	// skip optimize process, as the file is an alloy component
+	restrictionSkipOptimize = (fileRestriction !== null);
 
-    // skip optimize process, as the file is an alloy component
-    restrictionSkipOptimize = (fileRestriction !== null);
+	// pre-process runtime controllers to save runtime performance
+	var STYLE_PLACEHOLDER = '__STYLE_PLACEHOLDER__';
+	var STYLE_REGEX = new RegExp('[\'"]' + STYLE_PLACEHOLDER + '[\'"]');
+	var processedStyles = [];
+	_.each(state.styles, function(s) {
+		var o = {};
 
-    // pre-process runtime controllers to save runtime performance
-    var STYLE_PLACEHOLDER = '__STYLE_PLACEHOLDER__';
-    var STYLE_REGEX = new RegExp('[\'"]' + STYLE_PLACEHOLDER + '[\'"]');
-    var processedStyles = [];
-    _.each(state.styles, function(s) {
-        var o = {};
+		// make sure this style entry applies to the current platform
+		if (s && s.queries && s.queries.platform &&
+			!_.contains(s.queries.platform, buildPlatform)) {
+			return;
+		}
 
-        // make sure this style entry applies to the current platform
-        if (s && s.queries && s.queries.platform &&
-            !_.contains(s.queries.platform, buildPlatform)) {
-            return;
-        }
+		// get the runtime processed version of the JSON-safe style
+		var processed = '{' + styler.processStyle(s.style, state) + '}';
 
-        // get the runtime processed version of the JSON-safe style
-        var processed = '{' + styler.processStyle(s.style, state) + '}';
+		// create a temporary style object, sans style key
+		_.each(s, function(v,k) {
+			if (k === 'queries') {
+				var queriesObj = {};
 
-        // create a temporary style object, sans style key
-        _.each(s, function(v, k) {
-            if (k === 'queries') {
-                var queriesObj = {};
+				// optimize style conditionals for runtime
+				_.each(s[k], function(query, queryKey) {
+					if (queryKey === 'platform') {
+						// do nothing, we don't need the platform key anymore
+					} else if (queryKey === 'formFactor') {
+						queriesObj[queryKey] = 'is' + U.ucfirst(query);
+					} else if (queryKey === 'if') {
+						queriesObj[queryKey] =  query;
+					} else {
+						logger.warn('Unknown device query "' + queryKey + '"');
+					}
+				});
 
-                // optimize style conditionals for runtime
-                _.each(s[k], function(query, queryKey) {
-                    if (queryKey === 'platform') {
-                        // do nothing, we don't need the platform key anymore
-                    } else if (queryKey === 'formFactor') {
-                        queriesObj[queryKey] = 'is' + U.ucfirst(query);
-                    } else if (queryKey === 'if') {
-                        queriesObj[queryKey] = query;
-                    } else {
-                        logger.warn('Unknown device query "' + queryKey + '"');
-                    }
-                });
+				// add the queries object, if not empty
+				if (!_.isEmpty(queriesObj)) {
+					o[k] = queriesObj;
+				}
+			} else if (k !== 'style') {
+				o[k] = v;
+			}
+		});
 
-                // add the queries object, if not empty
-                if (!_.isEmpty(queriesObj)) {
-                    o[k] = queriesObj;
-                }
-            } else if (k !== 'style') {
-                o[k] = v;
-            }
-        });
+		// Create a full processed style string by inserting the processed style
+		// into the JSON stringifed temporary style object
+		o.style = STYLE_PLACEHOLDER;
+		processedStyles.push(JSON.stringify(o).replace(STYLE_REGEX, processed));
+	});
 
-        // Create a full processed style string by inserting the processed style
-        // into the JSON stringifed temporary style object
-        o.style = STYLE_PLACEHOLDER;
-        processedStyles.push(JSON.stringify(o).replace(STYLE_REGEX, processed));
-    });
-
-    // write out the pre-processed styles to runtime module files
-    var styleCode = 'module.exports = [' + processedStyles.join(',') + '];';
-    if (manifest) {
-        styleCode += _.template(
-            fs.readFileSync(path.join(alloyRoot, 'template', 'wpath.js'), 'utf8'),
-            { WIDGETID: manifest.id }
-        );
-    }
-    wrench.mkdirSyncRecursive(path.dirname(runtimeStylePath), 0755);
-    fs.writeFileSync(runtimeStylePath, styleCode);
+	// write out the pre-processed styles to runtime module files
+	var styleCode = 'module.exports = [' + processedStyles.join(',') + '];';
+	if (manifest) {
+		styleCode += _.template(
+			fs.readFileSync(path.join(alloyRoot,'template','wpath.js'), 'utf8'),
+			{ WIDGETID: manifest.id }
+		);
+	}
+	wrench.mkdirSyncRecursive(path.dirname(runtimeStylePath), 0755);
+	fs.writeFileSync(runtimeStylePath, styleCode);
 }
 
 function findModelMigrations(name, inDir) {
