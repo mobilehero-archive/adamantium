@@ -106,8 +106,8 @@ You can now use (some) ES2015 code in your controllers and other javascript file
     "dependencies": {},
     "babeljs": {
         "options": {
-            "plugins": [
-                "remove-debugger"
+            "presets": [
+                "es2015"
             ]
         }
     }
