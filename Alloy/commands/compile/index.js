@@ -809,9 +809,8 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
     template.__MAPMARKER_CONTROLLER_CODE__ += cCode.controller;
     template.preCode += cCode.pre;
 
-    // process the bindingsMap, if it contains any data bindings
-    var bTemplate = "$.<%= id %>.<%= prop %>=_.isFunction(<%= model %>.transform)?";
-    bTemplate += "<%= model %>.transform()['<%= attr %>']: _.template('<%= tplVal %>', {<%= mname %>: <%= model %>.toJSON()});";
+	// for each model variable in the bindings map...
+	_.each(styler.bindingsMap, function(mapping,modelVar) {
 
 		// open the model binding handler
 		var handlerVar = CU.generateUniqueId();
@@ -824,7 +823,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 		CU.destroyCode += modelVar + " && " + ((state.parentFormFactor) ? 'is' + U.ucfirst(state.parentFormFactor) : '' ) +
 			modelVar + ".off('" + CONST.MODEL_BINDING_EVENTS + "'," + handlerVar + ");";
 
-		// for each specific conditional within the bindings map....
+	// for each specific conditional within the bindings map....
 		_.each(_.groupBy(mapping.bindings, function(b){return b.condition;}), function(bindings,condition) {
 			var bCode = '';
 
@@ -832,19 +831,7 @@ function parseAlloyComponent(view, dir, manifest, noView, fileRestriction) {
 			_.each(bindings, function(binding) {
 				bCode += "$." + binding.id + "." + binding.prop + " = " + binding.val + ";";
 			});
-
-            // for each binding belonging to this model/conditional pair...
-            _.each(bindings, function(binding) {
-                bCode += _.template(bTemplate, {
-                    id: binding.id,
-                    prop: binding.prop,
-                    model: modelVar,
-                    attr: binding.attr,
-                    mname: binding.mname,
-                    tplVal: binding.tplVal
-                });
-            });
-
+            
             // if this is a legit conditional, wrap the binding code in it
             if (typeof condition !== 'undefined' && condition !== 'undefined') {
                 bCode = 'if(' + condition + '){' + bCode + '}';
